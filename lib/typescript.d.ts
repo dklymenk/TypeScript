@@ -14,7 +14,7 @@ and limitations under the License.
 ***************************************************************************** */
 
 declare namespace ts {
-    const versionMajorMinor = "4.4";
+    const versionMajorMinor = "4.5";
     /** The version of the TypeScript compiler release */
     const version: string;
     /**
@@ -1925,7 +1925,7 @@ declare namespace ts {
         id?: number;
     }
     export interface FlowStart extends FlowNodeBase {
-        node?: FunctionExpression | ArrowFunction | MethodDeclaration;
+        node?: FunctionExpression | ArrowFunction | MethodDeclaration | GetAccessorDeclaration | SetAccessorDeclaration;
     }
     export interface FlowLabel extends FlowNodeBase {
         antecedents: FlowNode[] | undefined;
@@ -2272,6 +2272,8 @@ declare namespace ts {
         isValidPropertyAccess(node: PropertyAccessExpression | QualifiedName | ImportTypeNode, propertyName: string): boolean;
         /** Follow all aliases to get the original symbol. */
         getAliasedSymbol(symbol: Symbol): Symbol;
+        /** Follow a *single* alias to get the immediately aliased symbol. */
+        getImmediateAliasedSymbol(symbol: Symbol): Symbol | undefined;
         getExportsOfModule(moduleSymbol: Symbol): Symbol[];
         getJsxIntrinsicTagNamesAt(location: Node): Symbol[];
         isOptionalParameter(node: ParameterDeclaration): boolean;
@@ -2280,6 +2282,7 @@ declare namespace ts {
         getApparentType(type: Type): Type;
         getBaseConstraintOfType(type: Type): Type | undefined;
         getDefaultFromTypeParameter(type: Type): Type | undefined;
+        getTypePredicateOfSignature(signature: Signature): TypePredicate | undefined;
         /**
          * Depending on the operation performed, it may be appropriate to throw away the checker
          * if the cancellation token is triggered. Typically, if it is used for error checking
@@ -3056,6 +3059,7 @@ declare namespace ts {
         realpath?(path: string): string;
         getCurrentDirectory?(): string;
         getDirectories?(path: string): string[];
+        useCaseSensitiveFileNames?: boolean | (() => boolean);
     }
     /**
      * Represents the result of module resolution.
@@ -3216,7 +3220,8 @@ declare namespace ts {
         NonNullAssertions = 4,
         PartiallyEmittedExpressions = 8,
         Assertions = 6,
-        All = 15
+        All = 15,
+        ExcludeJSDocTypeAssertion = 16
     }
     export type TypeOfTag = "undefined" | "number" | "bigint" | "boolean" | "string" | "symbol" | "object" | "function";
     export interface NodeFactory {
@@ -3617,7 +3622,7 @@ declare namespace ts {
         updateDefaultClause(node: DefaultClause, statements: readonly Statement[]): DefaultClause;
         createHeritageClause(token: HeritageClause["token"], types: readonly ExpressionWithTypeArguments[]): HeritageClause;
         updateHeritageClause(node: HeritageClause, types: readonly ExpressionWithTypeArguments[]): HeritageClause;
-        createCatchClause(variableDeclaration: string | VariableDeclaration | undefined, block: Block): CatchClause;
+        createCatchClause(variableDeclaration: string | BindingName | VariableDeclaration | undefined, block: Block): CatchClause;
         updateCatchClause(node: CatchClause, variableDeclaration: VariableDeclaration | undefined, block: Block): CatchClause;
         createPropertyAssignment(name: string | PropertyName, initializer: Expression): PropertyAssignment;
         updatePropertyAssignment(node: PropertyAssignment, name: PropertyName, initializer: Expression): PropertyAssignment;
@@ -5884,7 +5889,7 @@ declare namespace ts {
     interface InlayHint {
         text: string;
         position: number;
-        kind?: InlayHintKind;
+        kind: InlayHintKind;
         whitespaceBefore?: boolean;
         whitespaceAfter?: boolean;
     }
@@ -7269,7 +7274,7 @@ declare namespace ts {
     /** @deprecated Use `factory.updateHeritageClause` or the factory supplied by your transformation context instead. */
     const updateHeritageClause: (node: HeritageClause, types: readonly ExpressionWithTypeArguments[]) => HeritageClause;
     /** @deprecated Use `factory.createCatchClause` or the factory supplied by your transformation context instead. */
-    const createCatchClause: (variableDeclaration: string | VariableDeclaration | undefined, block: Block) => CatchClause;
+    const createCatchClause: (variableDeclaration: string | VariableDeclaration | BindingName | undefined, block: Block) => CatchClause;
     /** @deprecated Use `factory.updateCatchClause` or the factory supplied by your transformation context instead. */
     const updateCatchClause: (node: CatchClause, variableDeclaration: VariableDeclaration | undefined, block: Block) => CatchClause;
     /** @deprecated Use `factory.createPropertyAssignment` or the factory supplied by your transformation context instead. */
