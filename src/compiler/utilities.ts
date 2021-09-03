@@ -3790,7 +3790,7 @@ namespace ts {
             add,
             lookup,
             getGlobalDiagnostics,
-            getDiagnostics,
+            getDiagnostics: withExcludedCodesFilter(getDiagnostics),
         };
 
         function lookup(diagnostic: Diagnostic): Diagnostic | undefined {
@@ -7396,5 +7396,10 @@ namespace ts {
     /* @internal */
     export function isInfinityOrNaNString(name: string | __String): boolean {
         return name === "Infinity" || name === "-Infinity" || name === "NaN";
+    }
+
+    export function withExcludedCodesFilter(diagnosticsGetter: (...args: any[]) => any[])  {
+      const excludedCodes = [80005, 7044, 7043];
+      return (...args: any[]) => diagnosticsGetter(...args).filter(({code}) => excludedCodes.indexOf(code) === -1);
     }
 }
